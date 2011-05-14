@@ -5,9 +5,9 @@ Gem::Specification.new do |s|
 
   s.name        = 'spree_store_credits'
   s.version     = '1.0.1'
-  s.authors     = ["Roman Smirnov", "Brian Quinn"]
-  s.email       = 'roman@railsdog.com'
-  s.homepage    = 'http://github.com/spree/spree-store-credits'
+  s.authors     = ["Roman Smirnov", "Brian Quinn", "Vladimir Krylov"]
+  s.email       = 'vladimir@gmail.com'
+  s.homepage    = 'http://github.com/kritik/spree-store-credits'
   s.summary     = 'Provides store credits for a Spree store.'
   s.description = 'Provides store credits for a Spree store.'
   s.required_ruby_version = '>= 1.8.7'

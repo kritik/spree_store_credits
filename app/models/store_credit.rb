@@ -4,4 +4,8 @@ class StoreCredit < ActiveRecord::Base
   validates :user, :presence => true
   
   belongs_to :user
+  
+  def self.payed_order_credit_name order = nil
+    "earned by with order #{order.id}"
+  end
 end

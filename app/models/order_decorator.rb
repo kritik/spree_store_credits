@@ -21,6 +21,19 @@ Order.class_eval do
       ret = payments.each(&:process!)
     end
   end
+  
+  # max credits that customer can use
+  # if parameter not set - then use all credit
+  def max_credit_to_use
+    begin
+      constraint = YAML::load( CustomSetting.find_or_create_by_name("credit").value || {})
+    rescue
+      constraint = {}
+    end
+    constraint[:max_charging] ||= 0
+    constraint[:max_charging] = constraint[:max_charging]/100 if constraint[:max_charging].to_f > 1
+    return [user.store_credits_total, ((total + store_credit_amount.abs)*(1-constraint[:max_charging]))].min
+  end
 
 
   private
@@ -31,7 +44,8 @@ Order.class_eval do
     @store_credit_amount = BigDecimal.new(@store_credit_amount.to_s).round(2)
 
     # store credit can't be greater than order total (not including existing credit), or the users available credit
-    @store_credit_amount = [@store_credit_amount, user.store_credits_total, (total + store_credit_amount.abs)].min
+    
+    @store_credit_amount = [@store_credit_amount, max_credit_to_use].flatten.min
 
     if @store_credit_amount <= 0
       if sca = adjustments.detect {|adjustment| adjustment.source_type == "StoreCredit" }
@@ -89,4 +103,28 @@ Order.class_eval do
   def remove_store_credits
     store_credits.clear if @remove_store_credits == '1'
   end
+  
+#   # charging credit when order is ready
+#   def charge_money_on_complete
+#     begin
+#       constraint = YAML::load( CustomSetting.find_or_create_by_name("credit").value || "")
+#     rescue
+#       constraint = {}
+#     end
+#     return unless constraint[:auto_charge]
+#     
+#     credit = StoreCredit.find_or_create_by_reason(StoreCredit.payed_order_credit_name(self))
+#     constraint[:charge_percent] ||= 0
+#     constraint[:charge_percent] = constraint[:charge_percent]/100 if constraint[:charge_percent].to_f > 1
+#     credit.user = user
+#     credit.amount = ((total + store_credit_amount.abs)*(1-constraint[:charge_percent]))
+#     return credit.save
+#   end
+#   
+#   # removing credit if it is needed
+#   def delete_failed_order_credit
+#     credit = StoreCredit.find_by_reason(StoreCredit.payed_order_credit_name(self))
+#     credit.delete if credit
+#   end
+    
 end
