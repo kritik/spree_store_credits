@@ -86,7 +86,7 @@ Order.class_eval do
         end
       end
     end
-
+    finalize!
   end
 
   # ensure that user has sufficient credits to cover adjustments
